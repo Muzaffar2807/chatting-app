@@ -1,44 +1,20 @@
-import express from "express";
-import { createServer } from "http";
-import { Server } from "socket.io";
-import cors from "cors";
-
-const port = 3000;
+import express from "express"; 
+import authRoutes from "./routes/auth.routes.js";
+import dotenv from "dotenv";
+import { connectDB } from "./lib/db.js";
 
 const app = express();
-const server = createServer(app);
+dotenv.config()
 
-const io = new Server(server, {
-  cors: {
-    origin: "http://localhost:5173",
-    methods: ["GET", "POST"],
-    credentials: true,
-  },
-});
+const PORT = process.env.PORT;
 
-io.on("connection", (socket) => {
-  console.log("User connected", socket.id);
- 
-  //socket.broadcast.emit("welcome", `welcome to server ${socket.id}`);
+app.use(express.json())
 
-  socket.on("message", (data) => {
-    console.log(data);
-    socket.broadcast.emit("receive-message", data);
-  });
-});
+app.use("/api/auth", authRoutes);
 
-app.use(
-  cors({
-    origin: "http://localhost:5173",
-    methods: ["GET", "POST"],
-    credentials: true,
-  })
-);
 
-app.get("/", (req, res) => {
-  res.send("Hello world");
-});
 
-server.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`)
+  connectDB()
+})
